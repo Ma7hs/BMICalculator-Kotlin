@@ -1,7 +1,9 @@
 package br.senai.sp.jandira.bmicalculator
 
 import android.os.Bundle
+import android.util.Log
 import android.view.textclassifier.SelectionEvent
+import android.widget.Space
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.BorderStroke
@@ -10,8 +12,12 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -19,16 +25,20 @@ import androidx.compose.ui.modifier.modifierLocalConsumer
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import br.senai.sp.jandira.bmicalculator.model.Client
+import br.senai.sp.jandira.bmicalculator.model.Product
 import br.senai.sp.jandira.bmicalculator.ui.theme.BMICalculatorTheme
 import org.intellij.lang.annotations.JdkConstants.HorizontalAlignment
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         setContent {
             BMICalculatorTheme {
                 Column() {
@@ -42,6 +52,15 @@ class MainActivity : ComponentActivity() {
 @Preview(showSystemUi = true)
 @Composable
 fun CalculatorScreen() {
+
+    var weightState =  rememberSaveable{
+        mutableStateOf("");
+    }
+
+    var heightState = rememberSaveable{
+        mutableStateOf("");
+    }
+
     Surface(modifier = Modifier.fillMaxSize()) {
         Column(modifier = Modifier.fillMaxSize()) {
             Column(
@@ -49,7 +68,7 @@ fun CalculatorScreen() {
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Image(
-                    modifier = Modifier.size(200.dp),
+                    modifier = Modifier.size(150.dp),
                     painter = painterResource(id = R.drawable.bmi),
                     contentDescription = "",
                 )
@@ -64,18 +83,22 @@ fun CalculatorScreen() {
             }
 
             Column(
-                modifier = Modifier.fillMaxSize().
-                        padding(24.dp)
-            ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 32.dp)
+                modifier = Modifier
+                    .padding(24.dp)
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 32.dp)
                 ) {
                     Text(text = stringResource(id = R.string.weight_label))
-                    OutlinedTextField(value = "'", onValueChange = {},
+                    OutlinedTextField(value = weightState.value,
+                        onValueChange = {Log.i("DSM2", it)
+                                        weightState.value = it;
+                        },
                         modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(16.dp)
+                        shape = RoundedCornerShape(24.dp),
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
                     )
                 }
                 Column(
@@ -84,25 +107,61 @@ fun CalculatorScreen() {
                         .padding(top = 32.dp),
                 ) {
                     Text(text = stringResource(id = R.string.height_label))
-                    OutlinedTextField(value = "'", onValueChange = {},
+                    OutlinedTextField(value = heightState.value,
+                        onValueChange = {
+                                        Log.i("DSM2", it)
+                                        heightState.value = it;
+                        },
                         modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(16.dp)
+                        shape = RoundedCornerShape(24.dp),
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
                     )
                 }
                 Button(
                     onClick = { /*TODO*/ },
-                    modifier = Modifier.
-                            fillMaxWidth().
-                            padding(top=24.dp),
-                            shape = RoundedCornerShape(16.dp)
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 24.dp),
+                        shape = RoundedCornerShape(24.dp),
+
                 ) {
                     Text(text = stringResource(id = R.string.button_calculate), fontSize = 16.sp, modifier = Modifier.padding(12.dp))
                 }
             }
 
-        }
-
             Column() {
+                Card(modifier = Modifier.fillMaxSize(),
+                    shape = RoundedCornerShape(topEnd = 32.dp, topStart = 32.dp),
+                    backgroundColor = Color(59, 74, 232)) {
+                    Column(modifier = Modifier.fillMaxSize(), verticalArrangement = Arrangement.SpaceEvenly, horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(text = stringResource(id = R.string.your_score),
+                            fontSize = 24.sp,
+                            textAlign = TextAlign.Center,
+                            color = Color.White,
+                            fontWeight = FontWeight.Bold);
+                        Text(text = "0.0",
+                        fontSize = 24.sp,
+                        textAlign = TextAlign.Center,
+                        color = Color.White,
+                        fontWeight = FontWeight.Bold)
+                        Text(text = stringResource(id = R.string.ideal_state),
+                            fontSize = 24.sp,
+                            textAlign = TextAlign.Center,
+                            color = Color.White,
+                            fontWeight = FontWeight.Bold)
+                        Row() {
+                            Button(onClick = { /*TODO*/ }, shape = RoundedCornerShape(12.dp)) {
+                                Text(text = stringResource(id = R.string.reset))
+                            }
+                            Spacer(modifier = Modifier.width(32.dp))
+                            Button(onClick = { /*TODO*/ }, shape = RoundedCornerShape(12.dp))  {
+                                Text(text = stringResource(id = R.string.share))
+                            }
+                        }
+
+                    }
+                }
+            }
             }
         }
         
