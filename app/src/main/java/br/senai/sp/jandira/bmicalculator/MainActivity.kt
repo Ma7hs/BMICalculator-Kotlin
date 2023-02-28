@@ -1,5 +1,6 @@
 package br.senai.sp.jandira.bmicalculator
 
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.textclassifier.SelectionEvent
@@ -14,14 +15,13 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.modifier.modifierLocalConsumer
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -30,6 +30,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import br.senai.sp.jandira.bmicalculator.calculate.calculator
+import br.senai.sp.jandira.bmicalculator.calculate.getBmiClassification
 import br.senai.sp.jandira.bmicalculator.model.Client
 import br.senai.sp.jandira.bmicalculator.model.Product
 import br.senai.sp.jandira.bmicalculator.ui.theme.BMICalculatorTheme
@@ -53,13 +55,25 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun CalculatorScreen() {
 
-    var weightState =  rememberSaveable{
+    var weightState by rememberSaveable{
         mutableStateOf("");
     }
 
-    var heightState = rememberSaveable{
+    var heightState by rememberSaveable{
         mutableStateOf("");
     }
+
+    var bmiState by rememberSaveable  {
+        mutableStateOf("0.0")
+    }
+
+    var bmiClassification by rememberSaveable {
+        mutableStateOf("");
+    }
+
+    val context = LocalContext.current.applicationContext;
+    val context2 = LocalContext.current
+
 
     Surface(modifier = Modifier.fillMaxSize()) {
         Column(modifier = Modifier.fillMaxSize()) {
@@ -92,9 +106,9 @@ fun CalculatorScreen() {
                             .padding(top = 32.dp)
                 ) {
                     Text(text = stringResource(id = R.string.weight_label))
-                    OutlinedTextField(value = weightState.value,
+                    OutlinedTextField(value = weightState,
                         onValueChange = {Log.i("DSM2", it)
-                                        weightState.value = it;
+                                        weightState = it;
                         },
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(24.dp),
@@ -107,10 +121,10 @@ fun CalculatorScreen() {
                         .padding(top = 32.dp),
                 ) {
                     Text(text = stringResource(id = R.string.height_label))
-                    OutlinedTextField(value = heightState.value,
+                    OutlinedTextField(value = heightState,
                         onValueChange = {
                                         Log.i("DSM2", it)
-                                        heightState.value = it;
+                                        heightState = it;
                         },
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(24.dp),
@@ -118,7 +132,14 @@ fun CalculatorScreen() {
                     )
                 }
                 Button(
-                    onClick = { /*TODO*/ },
+
+                    onClick = {
+                        var w = weightState.toDouble();
+                        var h = heightState.toDouble();
+                        var bmi = calculator(w, h);
+                              bmiState =  String.format("%.2f", bmi)
+                            bmiClassification = getBmiClassification(bmi, context)
+                              },
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(top = 24.dp),
@@ -139,22 +160,30 @@ fun CalculatorScreen() {
                             textAlign = TextAlign.Center,
                             color = Color.White,
                             fontWeight = FontWeight.Bold);
-                        Text(text = "0.0",
+                        Text(text = bmiState,
                         fontSize = 24.sp,
                         textAlign = TextAlign.Center,
                         color = Color.White,
                         fontWeight = FontWeight.Bold)
-                        Text(text = stringResource(id = R.string.ideal_state),
+                        Text(text = bmiClassification,
                             fontSize = 24.sp,
                             textAlign = TextAlign.Center,
                             color = Color.White,
                             fontWeight = FontWeight.Bold)
                         Row() {
-                            Button(onClick = { /*TODO*/ }, shape = RoundedCornerShape(12.dp)) {
+                            Button(onClick = {
+                                             heightState =  ""
+                                            weightState = ""
+                                            bmiState = "0.0"
+                                            bmiClassification = ""
+                            }, shape = RoundedCornerShape(12.dp)) {
                                 Text(text = stringResource(id = R.string.reset))
                             }
                             Spacer(modifier = Modifier.width(32.dp))
-                            Button(onClick = { /*TODO*/ }, shape = RoundedCornerShape(12.dp))  {
+                            Button(onClick = {
+                                    val openOther = Intent(context2, SignUpActivity::class.java)
+                                   context2.startActivity(openOther)},
+                                shape = RoundedCornerShape(12.dp))  {
                                 Text(text = stringResource(id = R.string.share))
                             }
                         }
